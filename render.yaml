@@ -1,0 +1,6 @@
+services:
+  - type: static
+    name: invitacion-cumple
+    rootDir: .
+    buildCommand: ""
+    staticPublishPath: .
