@@ -192,19 +192,24 @@
             }, 100);
         }
 
-        function updateMusicIcon() {
+        function setMusicIcon(muted) {
             const iconUnmuted = document.getElementById('icon-unmuted');
             const iconMuted = document.getElementById('icon-muted');
+            if (!iconUnmuted || !iconMuted) return;
+            if (muted) {
+                iconUnmuted.classList.add('hidden');
+                iconMuted.classList.remove('hidden');
+            } else {
+                iconMuted.classList.add('hidden');
+                iconUnmuted.classList.remove('hidden');
+            }
+        }
+
+        function updateMusicIcon() {
             if (!player || !isPlayerReady) return;
             try {
                 const isMuted = player.isMuted ? player.isMuted() : false;
-                if (isMuted || !isPlaying) {
-                    iconUnmuted.classList.add('hidden');
-                    iconMuted.classList.remove('hidden');
-                } else {
-                    iconMuted.classList.add('hidden');
-                    iconUnmuted.classList.remove('hidden');
-                }
+                setMusicIcon(isMuted);
             } catch(e) {}
         }
 
@@ -219,6 +224,9 @@
                 setTimeout(() => startScreen.remove(), 1000);
                 musicBtn.style.opacity = '1';
 
+                // Mostrar icono de sonido activo inmediatamente
+                setMusicIcon(false);
+
                 // Primero desmutear (requiere interacción de usuario)
                 // Luego reproducir
                 if (isPlayerReady && player) {
@@ -232,9 +240,8 @@
                     }
                 }
 
-                // Actualizar icono con delay para que YouTube aplique el cambio
-                setTimeout(updateMusicIcon, 300);
-                setTimeout(updateMusicIcon, 1000);
+                // Sincronizar icono con YouTube después
+                setTimeout(updateMusicIcon, 500);
             });
 
             // Botón para mutear/desmutear
@@ -243,24 +250,19 @@
 
                 try {
                     if (player.isMuted && player.isMuted()) {
+                        // Está muteado → activar sonido
                         player.unMute();
                         player.setVolume(100);
-                        if (!isPlaying) player.playVideo();
+                        player.playVideo();
+                        setMusicIcon(false);
                     } else {
-                        if (isPlaying) {
-                            player.mute();
-                        } else {
-                            player.unMute();
-                            player.setVolume(100);
-                            player.playVideo();
-                        }
+                        // Está con sonido → mutear
+                        player.mute();
+                        setMusicIcon(true);
                     }
                 } catch(e) {
                     console.error('Error toggling mute:', e);
                 }
-
-                // Actualizar icono después de un breve delay
-                setTimeout(updateMusicIcon, 100);
             });
         });
     </script>
